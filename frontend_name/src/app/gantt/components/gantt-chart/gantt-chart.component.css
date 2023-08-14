@@ -1,0 +1,34 @@
+@import 'dhtmlx-gantt/codebase/dhtmlxgantt.css';
+
+
+.gantt-chart{
+    position: relative;
+    width: 100%;
+    height: 600px;
+}
+
+.baseline {
+    position: absolute;
+    border-radius: 2px;
+    opacity: 0.6;
+    margin-top: -7px;
+    height: 12px;
+    background: red;
+    border: 1px solid rgb(255, 153, 0);
+}
+
+.gantt_task_line, .gantt_line_wrapper {
+    margin-top: -9px;
+}
+
+.gantt_side_content {
+    margin-bottom: 7px;
+}
+
+.gantt_task_link .gantt_link_arrow {
+    margin-top: -12px
+}
+
+.gantt_side_content.gantt_right {
+    bottom: 0;
+}
