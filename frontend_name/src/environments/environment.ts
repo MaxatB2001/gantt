@@ -8,4 +8,4 @@ export const keycloakConfigInfo = {
     clientId: 'frontend-client'
 };
 
-export const mainURL = 'http://10.11.10.10:48250';
+export const mainURL = 'http://localhost:48400';

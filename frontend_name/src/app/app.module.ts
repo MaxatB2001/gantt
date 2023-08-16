@@ -8,6 +8,7 @@ import { RouterModule } from '@angular/router';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { GanttModule } from './gantt/gantt.module';
 import { GanttRoutingModule } from './gantt/gantt-routing.module';
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   declarations: [
@@ -20,7 +21,8 @@ import { GanttRoutingModule } from './gantt/gantt-routing.module';
     RouterModule,
     KeycloakAngularModule,
     GanttModule,
-    GanttRoutingModule
+    GanttRoutingModule,
+    HttpClientModule
   ],
   providers: [
     {
