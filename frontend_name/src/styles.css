@@ -1,4 +1,4 @@
-/* You can add global styles to this file, and also import other style files */
+/* You can add global styles to this file, and also import other style files
 @import 'dhtmlx-gantt/codebase/dhtmlxgantt.css';
 
 * {
@@ -37,3 +37,7 @@
 .gantt_side_content.gantt_right {
     bottom: 0;
 }
+
+.gantt_container {
+    border-radius: 4px;
+} */

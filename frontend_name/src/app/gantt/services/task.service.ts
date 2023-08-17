@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { mainURL } from 'src/environments/environment';
 
+
 interface Task {
       id: number,
     start_date: string,
@@ -26,5 +27,9 @@ export class TaskService {
 
   createLink(link: Link) {
     return this.http.post(`${mainURL}/api/task-manager/link`, link)
+  }
+
+  updateTask(task: Task) {
+    return this.http.patch(`${mainURL}/api/task-manager/update-gantt-task`, task)
   }
 }

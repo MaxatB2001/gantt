@@ -1,8 +1,10 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
-import {} from "dhtmlx-gantt"
+import { Component, ElementRef, ViewChild, ViewEncapsulation } from '@angular/core';
+import { Task } from "dhtmlx-gantt"
 import "dhtmlx-gantt";
 import { TaskService } from '../../services/task.service';
 import { UserService } from '../../services/user.service';
+import { MatDialog } from '@angular/material/dialog';
+import { SelectProjectComponent } from '../select-project/select-project.component';
 // import "dhtmlx-gantt/codebas"
 declare let gantt: any;
 
@@ -45,22 +47,53 @@ function byId(list:any, id:any) {
 @Component({
   selector: 'gantt-chart',
   templateUrl: './gantt-chart.component.html',
-  styleUrls: ['./gantt-chart.component.css']
+  styleUrls: ['./gantt-chart.component.css'],
+  encapsulation: ViewEncapsulation.None
 })
 export class GanttChartComponent {
 
-  constructor(private taskService: TaskService, private userService: UserService) {}
+  constructor(private taskService: TaskService, private userService: UserService, public dialog: MatDialog) {}
 
   @ViewChild('gantt_here', { static: true }) ganttContainer!: ElementRef;
 
   ngOnInit(){
+
     gantt.i18n.setLocale("ru");
     gantt.plugins({
       tooltip: true,
-      grouping: true
-      // quick_info: true
+      grouping: true,
+      auto_scheduling: true,
+      drag_timeline: true
     })
 
+    gantt.config.auto_scheduling = true;
+	gantt.config.auto_scheduling_strict = true;
+	gantt.config.auto_scheduling_compatibility = true;
+
+  gantt.config.min_column_width = 50;
+	gantt.config.scale_height = 90;
+
+  var weekScaleTemplate = function (date: any) {
+		var dateToStr = gantt.date.date_to_str("%d %M");
+		var endDate = gantt.date.add(gantt.date.add(date, 1, "week"), -1, "day");
+		return dateToStr(date) + " - " + dateToStr(endDate);
+	};
+
+  var daysStyle = function(date: any){
+		// you can use gantt.isWorkTime(date)
+		// when gantt.config.work_time config is enabled
+		// In this sample it's not so we just check week days
+
+		if(date.getDay() === 0 || date.getDay() === 6){
+			return "weekend";
+		}
+		return "";
+	};
+  gantt.config.scales = [
+		{unit: "month", step: 1, format: "%F, %Y"},
+		{unit: "week", step: 1, format: weekScaleTemplate},
+		{unit: "day", step:1, format: "%D", css:daysStyle }
+	];
     // gantt.config.date_format = "%Y-%m-%d %H:%i:%s";
 	gantt.config.bar_height = 16;
 	gantt.config.row_height = 40;
@@ -73,28 +106,6 @@ export class GanttChartComponent {
 
   gantt.config.columns.push({name: "owner", label: "Исполнитель", width: 80, align: "center", template: function (item: any) {
     return byId(gantt.serverList('owner'), item.owner)}})
-
-  // gantt.serverList("staff", [
-	// 	{key: 1, label: "John", backgroundColor:"#03A9F4", textColor:"#FFF"},
-	// 	{key: 2, label: "Mike", backgroundColor:"#f57730", textColor:"#FFF"},
-	// 	{key: 3, label: "Anna", backgroundColor:"#e157de", textColor:"#FFF"},
-	// 	{key: 4, label: "Bill", backgroundColor:"#78909C", textColor:"#FFF"},
-	// 	{key: 7, label: "Floe", backgroundColor:"#8D6E63", textColor:"#FFF"}
-	// ]);
-
-
-
-  // gantt.config.lightbox.sections = [
-	// 	{name: "description", height: 70, map_to: "text", type: "textarea", focus: true},
-	// 	{name: "time", map_to: "auto", type: "duration"},
-	// 	{
-	// 		name: "baseline",
-	// 		map_to: {start_date: "planned_start", end_date: "planned_end"},
-	// 		button: true,
-	// 		type: "duration_optional"
-	// 	},
-  //   {name: "Исполнитель", height: 22, map_to: "owner_id", type: "select", options: gantt.serverList("staff")},
-	// ];
   
     gantt.addTaskLayer({
       renderer: {
@@ -147,7 +158,14 @@ export class GanttChartComponent {
       return ' '
     };
 
-
+    gantt.attachEvent("onAfterTaskAutoSchedule", function (task: any, new_date: any, constraint: any, predecessor: any) {
+      if(task && predecessor){
+        gantt.message({
+          text: "<b>" + task.text + "</b> has been rescheduled to " + gantt.templates.task_date(new_date) + " due to <b>" + predecessor.text + "</b> constraint",
+          expire: 4000
+        });
+      }
+    });
 
     gantt.attachEvent("onGanttReady", () => {
       var tooltips  = gantt.ext.tooltips
@@ -157,6 +175,7 @@ export class GanttChartComponent {
     gantt.attachEvent("onTaskLoading", function (task: any) {
       console.log("LOADING")
       console.log(task.start_date);
+      task.text = task.text
       // task.start_date =gantt.date.parseDate(task.start_date, "xml_date");
       task.planned_start = gantt.date.parseDate(task.planned_start, "xml_date");
       task.planned_end = gantt.date.parseDate(task.planned_end, "xml_date");
@@ -176,11 +195,10 @@ export class GanttChartComponent {
         var pr = Math.floor(task.progress * 100 * 10) / 10;
         console.log(pr);
       } else {
-        var convert = gantt.date.date_to_str("%H:%i, %F %j");
-			var s = convert(task.start_date);
-			var e = convert(task.end_date);
-      console.log(s);
-      console.log(e);
+			console.log(task);
+      this.taskService.updateTask(task).subscribe(data => {
+        console.log(data)
+      })
       
       }
     })
@@ -224,9 +242,13 @@ export class GanttChartComponent {
     // gantt.parse(task)
 }
 
-test() {
-  gantt.getTask(665).owner = "2f118e26-475c-4e20-8bc1-8d5dbf6dd782";
-  gantt.updateTask(665)
+test = () => {
+  // gantt.getTask(665).owner = "2f118e26-475c-4e20-8bc1-8d5dbf6dd782";
+  // gantt.updateTask(665)
+  // gantt.config.start_date = new Date()
+  // gantt.config.end_date = new Date(2023, 10, 10)
+  // gantt.render()
+  // console.log(gantt.config.start_date)
 }
 
  showGroups(listname: string) {
@@ -242,5 +264,16 @@ test() {
     gantt.groupBy(false);
 
   }
+}
+
+openSelectProjectDialog(e: any) {
+  const rect = e.currentTarget.getBoundingClientRect()
+  var projects = gantt.getTaskByTime().filter((task: Task) => task.type == "project");
+  
+  this.dialog.open(SelectProjectComponent, {
+    backdropClass: 'cdk-overlay-transparent-backdrop',
+    position: {left: `${rect.left}px`, top: `${rect.bottom + 10}px`},
+    data: {projects}
+  })
 }
 }

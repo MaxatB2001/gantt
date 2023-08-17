@@ -3,16 +3,22 @@ import { CommonModule } from '@angular/common';
 
 import { GanttRoutingModule } from './gantt-routing.module';
 import { GanttChartComponent } from './components/gantt-chart/gantt-chart.component';
-import { HttpClient } from '@angular/common/http';
-
+import {MatButtonModule} from '@angular/material/button';
+import {MatDialogModule} from '@angular/material/dialog';
+import { SelectProjectComponent } from './components/select-project/select-project.component';
+import {MatCheckboxModule} from '@angular/material/checkbox';
 
 @NgModule({
   declarations: [
-    GanttChartComponent
+    GanttChartComponent,
+    SelectProjectComponent
   ],
   imports: [
     CommonModule,
     GanttRoutingModule,
+    MatButtonModule,
+    MatDialogModule,
+    MatCheckboxModule
   ],
   exports: [GanttChartComponent]
 })

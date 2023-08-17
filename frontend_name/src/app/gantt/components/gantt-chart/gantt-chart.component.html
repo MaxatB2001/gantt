@@ -1,3 +1,10 @@
-<button (click)="showGroups('owner')">Группировка по пользователям</button>
-<button (click)="test()">test</button>
+<div class="wrapper">
+    <div class="header-wrapper">
+        <div class="header">
+            <!-- <button (click)="showGroups('owner')">Группировка по пользователям</button>
+            <button (click)="test()">test</button> -->
+            <button (click)="openSelectProjectDialog($event)" mat-stroked-button>Включить проекты</button>
+        </div>
+    </div>
 <div #gantt_here class='gantt-chart'></div>
+</div>
