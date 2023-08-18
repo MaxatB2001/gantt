@@ -1,6 +1,8 @@
 import { Component, ElementRef, ViewChild, ViewEncapsulation } from '@angular/core';
 import { Task } from "dhtmlx-gantt"
 import "dhtmlx-gantt";
+import * as moment from 'moment';
+moment.locale('ru')
 import { TaskService } from '../../services/task.service';
 import { UserService } from '../../services/user.service';
 import { MatDialog } from '@angular/material/dialog';
@@ -55,6 +57,9 @@ export class GanttChartComponent {
   constructor(private taskService: TaskService, private userService: UserService, public dialog: MatDialog) {}
 
   @ViewChild('gantt_here', { static: true }) ganttContainer!: ElementRef;
+
+  startDate: moment.Moment = moment()
+  endDate: moment.Moment = moment()
 
   ngOnInit(){
 

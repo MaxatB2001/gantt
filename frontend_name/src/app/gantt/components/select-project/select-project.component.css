@@ -1,5 +1,6 @@
 .wrapper {
     padding: 10px;
+    width: 300px;
 }
 
 .title {
@@ -10,4 +11,11 @@
     font-weight: 700;
     font-style: normal;
     line-height: 1.75rem;
+}
+
+.buttons {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
 }

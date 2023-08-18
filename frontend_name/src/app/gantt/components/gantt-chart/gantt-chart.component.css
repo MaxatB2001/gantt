@@ -43,8 +43,10 @@
     padding: 10px;
 }
 
-.header {
-
+.gantt-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .header-wrapper {
@@ -86,3 +88,13 @@
 .gantt_container {
     border-radius: 4px;
 }
+
+.date-range {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.date {
+
+}   

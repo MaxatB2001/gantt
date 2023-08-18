@@ -1,8 +1,20 @@
 <div class="wrapper">
     <div class="header-wrapper">
-        <div class="header">
+        <div class="gantt-header">
             <!-- <button (click)="showGroups('owner')">Группировка по пользователям</button>
             <button (click)="test()">test</button> -->
+            <div class="date-range">
+                <div class="date">
+                    <div>{{startDate.format("MMMM").substring(0,3)}}</div>
+                    <div>{{startDate.date()}}</div>
+                    <div>{{startDate.format("dddd").substring(0,3)}}</div>
+                </div>
+                <div class="date">
+                    <div>{{endDate.format("MMMM").substring(0,3)}}</div>
+                    <div>{{endDate.date()}}</div>
+                    <div>{{endDate.format("dddd").substring(0,3)}}</div>
+                </div>
+            </div>
             <button (click)="openSelectProjectDialog($event)" mat-stroked-button>Включить проекты</button>
         </div>
     </div>
