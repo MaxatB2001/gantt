@@ -7,6 +7,7 @@ import { TaskService } from '../../services/task.service';
 import { UserService } from '../../services/user.service';
 import { MatDialog } from '@angular/material/dialog';
 import { SelectProjectComponent } from '../select-project/select-project.component';
+import { MatDatepickerInputEvent } from '@angular/material/datepicker';
 // import "dhtmlx-gantt/codebas"
 declare let gantt: any;
 
@@ -281,4 +282,13 @@ openSelectProjectDialog(e: any) {
     data: {projects}
   })
 }
+
+  onDateChange($event: MatDatepickerInputEvent<Date>, index: number) {
+    console.log($event.value)
+    if (index == 1) {
+      console.log("start")
+    } else {
+      console.log("END")
+    }
+  }
 }

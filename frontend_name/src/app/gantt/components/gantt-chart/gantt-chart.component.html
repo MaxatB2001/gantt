@@ -4,15 +4,27 @@
             <!-- <button (click)="showGroups('owner')">Группировка по пользователям</button>
             <button (click)="test()">test</button> -->
             <div class="date-range">
-                <div class="date">
+                <div (click)="picker.open()" class="date-item">
                     <div>{{startDate.format("MMMM").substring(0,3)}}</div>
-                    <div>{{startDate.date()}}</div>
+                    <div class="date">{{startDate.date()}}</div>
                     <div>{{startDate.format("dddd").substring(0,3)}}</div>
+                    <input
+                    class="hide"
+                    (dateChange)="onDateChange($event, 1)"
+                     matInput
+                    [matDatepicker]="picker"/>
+                    <mat-datepicker #picker></mat-datepicker>
                 </div>
-                <div class="date">
+                <div class="date-item" (click)="picker2.open()">
                     <div>{{endDate.format("MMMM").substring(0,3)}}</div>
-                    <div>{{endDate.date()}}</div>
+                    <div class="date">{{endDate.date()}}</div>
                     <div>{{endDate.format("dddd").substring(0,3)}}</div>
+                    <input
+                    class="hide"
+                    (dateChange)="onDateChange($event, 2)"
+                     matInput
+                    [matDatepicker]="picker2"/>
+                    <mat-datepicker #picker2></mat-datepicker>
                 </div>
             </div>
             <button (click)="openSelectProjectDialog($event)" mat-stroked-button>Включить проекты</button>
