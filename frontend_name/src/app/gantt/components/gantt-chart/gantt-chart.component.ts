@@ -1,5 +1,5 @@
 import { Component, ElementRef, ViewChild, ViewEncapsulation } from '@angular/core';
-import { Task } from "dhtmlx-gantt"
+import { Link, Task } from "dhtmlx-gantt"
 import "dhtmlx-gantt";
 import * as moment from 'moment';
 moment.locale('ru')
@@ -8,6 +8,7 @@ import { UserService } from '../../services/user.service';
 import { MatDialog } from '@angular/material/dialog';
 import { SelectProjectComponent } from '../select-project/select-project.component';
 import { MatDatepickerInputEvent } from '@angular/material/datepicker';
+import { TaskStatus } from 'src/app/enums/task-status.enum';
 // import "dhtmlx-gantt/codebas"
 declare let gantt: any;
 
@@ -61,16 +62,97 @@ export class GanttChartComponent {
 
   startDate: moment.Moment = moment()
   endDate: moment.Moment = moment()
+  links: Link[] = []
+
+  zoomConfig = {
+		levels: [
+			{
+				name:"day",
+				scale_height: 27,
+				min_column_width:80,
+				scales:[
+					{unit: "day", step: 1, format: "%d %M"}
+				]
+			},
+			{
+				name:"week",
+				scale_height: 50,
+				min_column_width:50,
+				scales:[
+					{unit: "week", step: 1, format: function (date: any) {
+						var dateToStr = gantt.date.date_to_str("%d %M");
+						var endDate = gantt.date.add(date, -6, "day");
+						var weekNum = gantt.date.date_to_str("%W")(date);
+						return "#" + weekNum + ", " + dateToStr(date) + " - " + dateToStr(endDate);
+					}},
+					{unit: "day", step: 1, format: "%j %D"}
+				]
+			},
+			{
+				name:"month",
+				scale_height: 50,
+				min_column_width:120,
+				scales:[
+					{unit: "month", format: "%F, %Y"},
+					{unit: "week", format: "Week #%W"}
+				]
+			},
+			{
+				name:"quarter",
+				height: 50,
+				min_column_width:90,
+				scales:[
+					{unit: "month", step: 1, format: "%M"},
+					{
+						unit: "quarter", step: 1, format: function (date: any) {
+							var dateToStr = gantt.date.date_to_str("%M");
+							var endDate = gantt.date.add(gantt.date.add(date, 3, "month"), -1, "day");
+							return dateToStr(date) + " - " + dateToStr(endDate);
+						}
+					}
+				]
+			},
+			{
+				name:"year",
+				scale_height: 50,
+				min_column_width: 30,
+				scales:[
+					{unit: "year", step: 1, format: "%Y"}
+				]
+			}
+		]
+	};
+
+  zoomIn(){
+		gantt.ext.zoom.zoomIn();
+	}
+
+  zoomOut(){
+		gantt.ext.zoom.zoomOut()
+	}
+
 
   ngOnInit(){
-
+    console.log(Object.values(TaskStatus).map((ts) => {
+      return {key: ts, label: ts}
+    }));
+    
     gantt.i18n.setLocale("ru");
     gantt.plugins({
       tooltip: true,
       grouping: true,
       auto_scheduling: true,
-      drag_timeline: true
+      drag_timeline: true,
+      marker: true
     })
+    var dateToStr = gantt.date.date_to_str(gantt.config.task_date);
+    const today =  new Date()
+    gantt.addMarker({
+      start_date: today,
+      css: "today",
+      text: "Сегодня",
+      title: "Today: " + dateToStr(today)
+    });
 
     gantt.config.auto_scheduling = true;
 	gantt.config.auto_scheduling_strict = true;
@@ -79,11 +161,18 @@ export class GanttChartComponent {
   gantt.config.min_column_width = 50;
 	gantt.config.scale_height = 90;
 
+  gantt.serverList("status", Object.values(TaskStatus).map((ts) => {
+    return {key: ts, label: ts}
+  }));
+
   var weekScaleTemplate = function (date: any) {
 		var dateToStr = gantt.date.date_to_str("%d %M");
 		var endDate = gantt.date.add(gantt.date.add(date, 1, "week"), -1, "day");
 		return dateToStr(date) + " - " + dateToStr(endDate);
 	};
+
+  gantt.ext.zoom.init(this.zoomConfig);
+	gantt.ext.zoom.setLevel("year");
 
   var daysStyle = function(date: any){
 		// you can use gantt.isWorkTime(date)
@@ -110,8 +199,26 @@ export class GanttChartComponent {
   var labels = gantt.locale.labels;
 	labels.column_owner = labels.section_owner = "Owner";
 
+  gantt.templates.grid_row_class = gantt.templates.task_row_class = function (start: any, end: any, task: any) {
+		if (task.$virtual) {
+      return "summary-row"
+    }
+    return ""
+	};
+
+	gantt.templates.task_class = function (start: any, end: any, task: any) {
+		if (task.$virtual) {
+      return "summary-bar";
+    } 
+    return ""
+	};
+  
   gantt.config.columns.push({name: "owner", label: "Исполнитель", width: 80, align: "center", template: function (item: any) {
     return byId(gantt.serverList('owner'), item.owner)}})
+
+    gantt.config.columns.push({name: "status", label: "Статус", width: 80, align: "center", template: function (item: any) {
+      return item.status}})
+  
   
     gantt.addTaskLayer({
       renderer: {
@@ -154,14 +261,13 @@ export class GanttChartComponent {
     }
   
     gantt.templates.rightside_text = function (start: any, end: any, task: any) {
-      if (task.planned_end) {
-        if (end.getTime() > task.planned_end.getTime()) {
-          var overdue = Math.ceil(Math.abs((end.getTime() - task.planned_end.getTime()) / (24 * 60 * 60 * 1000)));
-          var text = "<b>Просрочено на: " + overdue + " дней</b>";
-          return text;
-        }
+      if (task.parent > 0) {
+        const user = byId(gantt.serverList('owner'), task.owner)
+        var text = `<b>${user}</b>`;
+        return text;
+      } else {
+        return ""
       }
-      return ' '
     };
 
     gantt.attachEvent("onAfterTaskAutoSchedule", function (task: any, new_date: any, constraint: any, predecessor: any) {
@@ -173,14 +279,20 @@ export class GanttChartComponent {
       }
     });
 
+    gantt.attachEvent("onAfterLinkDelete", (id: any,item: any) => {
+      console.log(id);
+        console.log(item)
+     this.taskService.deleteLink(id).subscribe(data => {
+      console.log(data)
+     })
+  });
+
     gantt.attachEvent("onGanttReady", () => {
       var tooltips  = gantt.ext.tooltips
       tooltips.tooltip.setViewport(gantt.$task_data)
     })
 
     gantt.attachEvent("onTaskLoading", function (task: any) {
-      console.log("LOADING")
-      console.log(task.start_date);
       task.text = task.text
       // task.start_date =gantt.date.parseDate(task.start_date, "xml_date");
       task.planned_start = gantt.date.parseDate(task.planned_start, "xml_date");
@@ -191,7 +303,8 @@ export class GanttChartComponent {
 
     gantt.attachEvent("onTaskClick", (id: number, e: any) => {
       let task = gantt.getTask(id)
-      console.log(task)
+      console.log(task);
+      
       return true
     })
 
@@ -199,9 +312,7 @@ export class GanttChartComponent {
       const task = gantt.getTask(id)
       if (mode == gantt.config.drag_mode.progress) {
         var pr = Math.floor(task.progress * 100 * 10) / 10;
-        console.log(pr);
       } else {
-			console.log(task);
       this.taskService.updateTask(task).subscribe(data => {
         console.log(data)
       })
@@ -219,10 +330,10 @@ export class GanttChartComponent {
 
 
     this.userService.getUsers().subscribe(data => {
-      console.log(data)
       const users = data.map(user => {
         return {key: user.id, label: user.lastName + " " + user.firstName}
       })
+      console.log(data)
       console.log(users)
       gantt.serverList("owner", users)
       gantt.config.lightbox.sections = [
@@ -235,14 +346,17 @@ export class GanttChartComponent {
           type: "duration_optional"
         },
         {name: "Исполнитель", height: 22, map_to: "owner", type: "select", options: gantt.serverList("owner")},
+        {name: "Статус", height: 22, map_to: "status", type: "select", options: gantt.serverList("status")}
       ];
       gantt.init(this.ganttContainer.nativeElement);
       this.taskService.getTasks().subscribe(data =>{
-        console.log(data)
+        this.links = data.links
         gantt.parse({
           data: data.ganttTasks,
           links: data.links
         })
+        this.startDate = moment(gantt.getState().min_date)
+        this.endDate =  moment(gantt.getState().max_date)
       })
     })
     // gantt.parse(task)
@@ -258,6 +372,7 @@ test = () => {
 }
 
  showGroups(listname: string) {
+  console.log(gantt.serverList(listname))
   if (listname) {
     gantt.groupBy({
       groups: gantt.serverList(listname),
@@ -272,6 +387,23 @@ test = () => {
   }
 }
 
+sortProjects(ids: any[]) {
+  console.log("ids",ids)
+  
+  var tasks = gantt.getTaskByTime().filter((task: Task) => {
+    if (ids.includes(task.id)) {
+      return false
+    }
+    return true
+  });
+  console.log(tasks);
+  
+  gantt.parse({
+    data: tasks,
+    links: this.links
+  })
+}
+
 openSelectProjectDialog(e: any) {
   const rect = e.currentTarget.getBoundingClientRect()
   var projects = gantt.getTaskByTime().filter((task: Task) => task.type == "project");
@@ -279,16 +411,24 @@ openSelectProjectDialog(e: any) {
   this.dialog.open(SelectProjectComponent, {
     backdropClass: 'cdk-overlay-transparent-backdrop',
     position: {left: `${rect.left}px`, top: `${rect.bottom + 10}px`},
-    data: {projects}
+    data: {projects, filterFc: this.sortProjects}
   })
 }
 
-  onDateChange($event: MatDatepickerInputEvent<Date>, index: number) {
+  onDateChange = ($event: MatDatepickerInputEvent<Date>, index: number) => {
     console.log($event.value)
     if (index == 1) {
+      this.startDate = moment($event.value)
+      gantt.config.start_date = $event.value
+      gantt.config.end_date = new Date(this.endDate.valueOf())
+      gantt.render()
       console.log("start")
     } else {
       console.log("END")
+      this.endDate = moment($event.value)
+      gantt.config.start_date = new Date(this.startDate.valueOf())
+      gantt.config.end_date =$event.value
+      gantt.render()
     }
   }
 }

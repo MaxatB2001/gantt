@@ -9,6 +9,8 @@ import { SelectProjectComponent } from './components/select-project/select-proje
 import {MatCheckboxModule} from '@angular/material/checkbox';
 import {MatDatepickerModule} from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
+import {MatIconModule} from '@angular/material/icon';
+import {MatMenuModule} from '@angular/material/menu';
 
 @NgModule({
   declarations: [
@@ -22,7 +24,9 @@ import { MatNativeDateModule } from '@angular/material/core';
     MatDialogModule,
     MatCheckboxModule,
     MatDatepickerModule,
-    MatNativeDateModule 
+    MatNativeDateModule,
+    MatIconModule,
+    MatMenuModule
   ],
   exports: [GanttChartComponent]
 })

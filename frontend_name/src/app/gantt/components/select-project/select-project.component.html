@@ -3,10 +3,10 @@
         <h1 class="title">Проекты</h1>
     </div>
     <div *ngFor="let project of data.projects">
-        <mat-checkbox class="example-margin" > {{project.text}}</mat-checkbox>
+        <mat-checkbox (change)="onCheck(project)" class="example-margin" > {{project.text}}</mat-checkbox>
     </div>
     <div class="buttons">
         <button mat-stroked-button>Отменить</button>
-        <button mat-raised-button color="primary">Применить</button>
+        <button mat-raised-button (click)="data.filterFc(selectedProjectIds)" color="primary">Применить</button>
     </div>
 </div>

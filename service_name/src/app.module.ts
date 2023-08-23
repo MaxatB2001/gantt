@@ -5,6 +5,8 @@ import { ZeebeModule, ZeebeServer } from 'nestjs-zeebe';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { KeycloakModule } from './keycloak/keycloak.module';
+import { GanttModule } from './gantt/gantt.module';
+import { SavedView } from './schemas/savedView.schema';
 
 @Module({
   imports: [
@@ -19,7 +21,7 @@ import { KeycloakModule } from './keycloak/keycloak.module';
       username: process.env.POSTGRESQL_USER,
       password: process.env.POSTGRESQL_PASS,
       database: process.env.POSTGRESQL_DB,
-      entities: [],
+      entities: [SavedView],
       synchronize: true,
       //autoLoadEntities: true
     }
@@ -27,6 +29,7 @@ import { KeycloakModule } from './keycloak/keycloak.module';
 
     ZeebeModule.forRoot({ gatewayAddress: process.env.ZEEBE_ADDRESS }),
     KeycloakModule,
+    GanttModule,
     ],
   providers: [
     ZeebeServer,

@@ -28,6 +28,13 @@
                 </div>
             </div>
             <button (click)="openSelectProjectDialog($event)" mat-stroked-button>Включить проекты</button>
+            <button mat-button [matMenuTriggerFor]="menu" mat-stroked-button>Группировка</button>
+            <mat-menu #menu="matMenu">  
+                <button (click)="showGroups('owner')" mat-menu-item>Исполнители</button>
+                <button (click)="showGroups('status')" mat-menu-item>Статус</button>
+            </mat-menu>
+            <button class="zoom-button" (click)="zoomIn()"><mat-icon>zoom_in</mat-icon></button>
+            <button class="zoom-button" (click)="zoomOut()"><mat-icon>zoom_out</mat-icon></button>
         </div>
     </div>
 <div #gantt_here class='gantt-chart'></div>

@@ -5,7 +5,7 @@ import { mainURL } from 'src/environments/environment';
 
 
 interface Task {
-      id: number,
+    id: number,
     start_date: string,
     text: string,
     progress: number,
@@ -31,5 +31,9 @@ export class TaskService {
 
   updateTask(task: Task) {
     return this.http.patch(`${mainURL}/api/task-manager/update-gantt-task`, task)
+  }
+
+  deleteLink(id: string) {
+    return this.http.delete(`${mainURL}/api/task-manager/link/${id}`)
   }
 }
